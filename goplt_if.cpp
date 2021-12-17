@@ -44,7 +44,7 @@
 #ifdef __RL78__
 #define TIMEOUT 100
 #else
-#define TIMEOUT 300	//WINDOWS環境ではレイテンシ長めのためタイムアウト長めに設定
+#define TIMEOUT 500	//WINDOWS環境ではレイテンシ長めのためタイムアウト長めに設定
 #endif
 
 //想定しうる最大のメモリー名バイト数
@@ -209,7 +209,7 @@ static char FAR * gets_lt(char FAR *buf,int16_t bufsize,uint32_t timeout)
 					_error_status|=ERROR_NAK;
 				}
 				while((r=uart_getc())!='\r'){
-					if(get_syscount()>st+timeout){
+					if(get_syscount()-st>timeout){
 						_error_status|=ERROR_TIMEOUT;
 						return NULL;
 					}
@@ -222,7 +222,7 @@ static char FAR * gets_lt(char FAR *buf,int16_t bufsize,uint32_t timeout)
 				_error_status|=ERROR_STX;
 				//受信データをcrまで取り込んで関数を抜ける
 				while((r=uart_getc())!='\r'){
-					if(get_syscount()>st+timeout){
+					if(get_syscount()-st>timeout){
 						_error_status|=ERROR_TIMEOUT;
 						return NULL;
 					}
@@ -234,7 +234,7 @@ static char FAR * gets_lt(char FAR *buf,int16_t bufsize,uint32_t timeout)
 			while(TRUE){
 				while((r=uart_getc())==-1){
 					//受信データ未達時のタイムアウト確認
-					if(get_syscount()>st+timeout){
+					if(get_syscount()-st>timeout){
 						_error_status|=ERROR_TIMEOUT;
 						return NULL;
 					}
@@ -251,7 +251,7 @@ static char FAR * gets_lt(char FAR *buf,int16_t bufsize,uint32_t timeout)
 						_error_status|=ERROR_OVERFLOW;
 						//受信データが終わるまでデータを取り出しておく
 						while((r=uart_getc())!='\r'){
-							if(get_syscount()>st+timeout){
+							if(get_syscount()-st>timeout){
 								_error_status|=ERROR_TIMEOUT;
 								return NULL;
 							}
@@ -262,21 +262,21 @@ static char FAR * gets_lt(char FAR *buf,int16_t bufsize,uint32_t timeout)
 					char sumstr[3];
 					*s='\0';
 					while((r=uart_getc())==-1){
-						if(get_syscount()>st+timeout){
+						if(get_syscount()-st>timeout){
 							_error_status|=ERROR_TIMEOUT;
 							return NULL;
 						}
 					}
 					sumstr[0]=r;
 					while((r=uart_getc())==-1){
-						if(get_syscount()>st+timeout){
+						if(get_syscount()-st>timeout){
 							_error_status|=ERROR_TIMEOUT;
 							return NULL;
 						}
 					}
 					sumstr[1]=r;
 					while((r=uart_getc())!='\r'){
-						if(get_syscount()>st+timeout){
+						if(get_syscount()-st>timeout){
 							_error_status|=ERROR_TIMEOUT;
 							return NULL;
 						}
@@ -292,7 +292,7 @@ static char FAR * gets_lt(char FAR *buf,int16_t bufsize,uint32_t timeout)
 				}
 			}
 		}else{
-			if(get_syscount()>st+timeout){
+			if(get_syscount()-st>timeout){
 				_error_status|=ERROR_TIMEOUT;
 				return NULL;
 			}
@@ -1279,6 +1279,8 @@ const char FAR *LtEnq(char FAR *rcv)
 		if(*s=='N'){
 			return NULL;
 		}
+	}else{
+		printf("Err no=%d\n",_get_error_code());
 	}
 	return (const char *)COMMERR;
 }
