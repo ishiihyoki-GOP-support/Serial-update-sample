@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/pi/gopct/build",
+  "command": "/usr/bin/c++     -g   -o CMakeFiles/a.out.dir/sample.cpp.o -c /home/pi/gopct/sample.cpp",
+  "file": "/home/pi/gopct/sample.cpp"
+},
+{
+  "directory": "/home/pi/gopct/build",
+  "command": "/usr/bin/c++     -g   -o CMakeFiles/a.out.dir/goplt_if.cpp.o -c /home/pi/gopct/goplt_if.cpp",
+  "file": "/home/pi/gopct/goplt_if.cpp"
+}
+]

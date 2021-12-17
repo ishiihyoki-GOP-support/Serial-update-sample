@@ -1,0 +1,1 @@
+/usr/bin/c++   -g   CMakeFiles/a.out.dir/sample.cpp.o CMakeFiles/a.out.dir/goplt_if.cpp.o  -o a.out -rdynamic 

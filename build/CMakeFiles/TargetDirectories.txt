@@ -1,0 +1,3 @@
+/home/pi/gopct/build/CMakeFiles/rebuild_cache.dir
+/home/pi/gopct/build/CMakeFiles/edit_cache.dir
+/home/pi/gopct/build/CMakeFiles/a.out.dir
