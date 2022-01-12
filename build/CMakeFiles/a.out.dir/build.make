@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pi/gopct
+CMAKE_SOURCE_DIR = /home/pi/serial-update-sample
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pi/gopct/build
+CMAKE_BINARY_DIR = /home/pi/serial-update-sample/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/a.out.dir/depend.make
@@ -57,42 +57,42 @@ include CMakeFiles/a.out.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/a.out.dir/flags.make
 
-CMakeFiles/a.out.dir/sample.cpp.o: CMakeFiles/a.out.dir/flags.make
-CMakeFiles/a.out.dir/sample.cpp.o: ../sample.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/gopct/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/a.out.dir/sample.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/sample.cpp.o -c /home/pi/gopct/sample.cpp
+CMakeFiles/a.out.dir/update_sample.cpp.o: CMakeFiles/a.out.dir/flags.make
+CMakeFiles/a.out.dir/update_sample.cpp.o: ../update_sample.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/serial-update-sample/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/a.out.dir/update_sample.cpp.o"
+	/usr/bin/g++-6   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/update_sample.cpp.o -c /home/pi/serial-update-sample/update_sample.cpp
 
-CMakeFiles/a.out.dir/sample.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/sample.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/gopct/sample.cpp > CMakeFiles/a.out.dir/sample.cpp.i
+CMakeFiles/a.out.dir/update_sample.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/update_sample.cpp.i"
+	/usr/bin/g++-6  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/serial-update-sample/update_sample.cpp > CMakeFiles/a.out.dir/update_sample.cpp.i
 
-CMakeFiles/a.out.dir/sample.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/sample.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/gopct/sample.cpp -o CMakeFiles/a.out.dir/sample.cpp.s
+CMakeFiles/a.out.dir/update_sample.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/update_sample.cpp.s"
+	/usr/bin/g++-6  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/serial-update-sample/update_sample.cpp -o CMakeFiles/a.out.dir/update_sample.cpp.s
 
-CMakeFiles/a.out.dir/sample.cpp.o.requires:
+CMakeFiles/a.out.dir/update_sample.cpp.o.requires:
 
-.PHONY : CMakeFiles/a.out.dir/sample.cpp.o.requires
+.PHONY : CMakeFiles/a.out.dir/update_sample.cpp.o.requires
 
-CMakeFiles/a.out.dir/sample.cpp.o.provides: CMakeFiles/a.out.dir/sample.cpp.o.requires
-	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/sample.cpp.o.provides.build
-.PHONY : CMakeFiles/a.out.dir/sample.cpp.o.provides
+CMakeFiles/a.out.dir/update_sample.cpp.o.provides: CMakeFiles/a.out.dir/update_sample.cpp.o.requires
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/update_sample.cpp.o.provides.build
+.PHONY : CMakeFiles/a.out.dir/update_sample.cpp.o.provides
 
-CMakeFiles/a.out.dir/sample.cpp.o.provides.build: CMakeFiles/a.out.dir/sample.cpp.o
+CMakeFiles/a.out.dir/update_sample.cpp.o.provides.build: CMakeFiles/a.out.dir/update_sample.cpp.o
 
 
 CMakeFiles/a.out.dir/goplt_if.cpp.o: CMakeFiles/a.out.dir/flags.make
 CMakeFiles/a.out.dir/goplt_if.cpp.o: ../goplt_if.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/gopct/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/a.out.dir/goplt_if.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/goplt_if.cpp.o -c /home/pi/gopct/goplt_if.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/pi/serial-update-sample/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/a.out.dir/goplt_if.cpp.o"
+	/usr/bin/g++-6   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/a.out.dir/goplt_if.cpp.o -c /home/pi/serial-update-sample/goplt_if.cpp
 
 CMakeFiles/a.out.dir/goplt_if.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/a.out.dir/goplt_if.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/gopct/goplt_if.cpp > CMakeFiles/a.out.dir/goplt_if.cpp.i
+	/usr/bin/g++-6  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/pi/serial-update-sample/goplt_if.cpp > CMakeFiles/a.out.dir/goplt_if.cpp.i
 
 CMakeFiles/a.out.dir/goplt_if.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/a.out.dir/goplt_if.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/gopct/goplt_if.cpp -o CMakeFiles/a.out.dir/goplt_if.cpp.s
+	/usr/bin/g++-6  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/pi/serial-update-sample/goplt_if.cpp -o CMakeFiles/a.out.dir/goplt_if.cpp.s
 
 CMakeFiles/a.out.dir/goplt_if.cpp.o.requires:
 
@@ -107,17 +107,17 @@ CMakeFiles/a.out.dir/goplt_if.cpp.o.provides.build: CMakeFiles/a.out.dir/goplt_i
 
 # Object files for target a.out
 a_out_OBJECTS = \
-"CMakeFiles/a.out.dir/sample.cpp.o" \
+"CMakeFiles/a.out.dir/update_sample.cpp.o" \
 "CMakeFiles/a.out.dir/goplt_if.cpp.o"
 
 # External object files for target a.out
 a_out_EXTERNAL_OBJECTS =
 
-a.out: CMakeFiles/a.out.dir/sample.cpp.o
+a.out: CMakeFiles/a.out.dir/update_sample.cpp.o
 a.out: CMakeFiles/a.out.dir/goplt_if.cpp.o
 a.out: CMakeFiles/a.out.dir/build.make
 a.out: CMakeFiles/a.out.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/pi/gopct/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable a.out"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/pi/serial-update-sample/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable a.out"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/a.out.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -125,7 +125,7 @@ CMakeFiles/a.out.dir/build: a.out
 
 .PHONY : CMakeFiles/a.out.dir/build
 
-CMakeFiles/a.out.dir/requires: CMakeFiles/a.out.dir/sample.cpp.o.requires
+CMakeFiles/a.out.dir/requires: CMakeFiles/a.out.dir/update_sample.cpp.o.requires
 CMakeFiles/a.out.dir/requires: CMakeFiles/a.out.dir/goplt_if.cpp.o.requires
 
 .PHONY : CMakeFiles/a.out.dir/requires
@@ -135,6 +135,6 @@ CMakeFiles/a.out.dir/clean:
 .PHONY : CMakeFiles/a.out.dir/clean
 
 CMakeFiles/a.out.dir/depend:
-	cd /home/pi/gopct/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/pi/gopct /home/pi/gopct /home/pi/gopct/build /home/pi/gopct/build /home/pi/gopct/build/CMakeFiles/a.out.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/pi/serial-update-sample/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/pi/serial-update-sample /home/pi/serial-update-sample /home/pi/serial-update-sample/build /home/pi/serial-update-sample/build /home/pi/serial-update-sample/build/CMakeFiles/a.out.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/a.out.dir/depend
 

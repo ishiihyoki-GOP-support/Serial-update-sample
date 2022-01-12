@@ -1,12 +1,12 @@
 [
 {
-  "directory": "/home/pi/gopct/build",
-  "command": "/usr/bin/c++     -g   -o CMakeFiles/a.out.dir/sample.cpp.o -c /home/pi/gopct/sample.cpp",
-  "file": "/home/pi/gopct/sample.cpp"
+  "directory": "/home/pi/serial-update-sample/build",
+  "command": "/usr/bin/g++-6     -std=c++11 -Wall -Wextra -pedantic -Wcast-align -Wcast-qual -Wconversion -Wdisabled-optimization -Wendif-labels -Wfloat-equal -Winit-self -Winline -Wlogical-op -Wmissing-include-dirs -Wnon-virtual-dtor -Wold-style-cast -Woverloaded-virtual -Wpacked -Wpointer-arith -Wredundant-decls -Wshadow -Wsign-promo -Wswitch-default -Wswitch-enum -Wunsafe-loop-optimizations -Wvariadic-macros -Wwrite-strings  -g3 -O0 -pg   -o CMakeFiles/a.out.dir/update_sample.cpp.o -c /home/pi/serial-update-sample/update_sample.cpp",
+  "file": "/home/pi/serial-update-sample/update_sample.cpp"
 },
 {
-  "directory": "/home/pi/gopct/build",
-  "command": "/usr/bin/c++     -g   -o CMakeFiles/a.out.dir/goplt_if.cpp.o -c /home/pi/gopct/goplt_if.cpp",
-  "file": "/home/pi/gopct/goplt_if.cpp"
+  "directory": "/home/pi/serial-update-sample/build",
+  "command": "/usr/bin/g++-6     -std=c++11 -Wall -Wextra -pedantic -Wcast-align -Wcast-qual -Wconversion -Wdisabled-optimization -Wendif-labels -Wfloat-equal -Winit-self -Winline -Wlogical-op -Wmissing-include-dirs -Wnon-virtual-dtor -Wold-style-cast -Woverloaded-virtual -Wpacked -Wpointer-arith -Wredundant-decls -Wshadow -Wsign-promo -Wswitch-default -Wswitch-enum -Wunsafe-loop-optimizations -Wvariadic-macros -Wwrite-strings  -g3 -O0 -pg   -o CMakeFiles/a.out.dir/goplt_if.cpp.o -c /home/pi/serial-update-sample/goplt_if.cpp",
+  "file": "/home/pi/serial-update-sample/goplt_if.cpp"
 }
 ]

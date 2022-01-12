@@ -78,6 +78,7 @@ const char FAR *SPI_LtEnq(char FAR *rcv);
 
 #ifdef FILESYSTEM
 int RamUpload(char *srcname, int blockno, int packsize);
+BOOL DoTransfarDataSer(char *pathname);
 #endif
 
 #ifdef __cplusplus

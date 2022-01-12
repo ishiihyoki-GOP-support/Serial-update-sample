@@ -4,6 +4,6 @@
 CMakeFiles/a.out.dir/goplt_if.cpp.o: ../goplt_if.cpp
 CMakeFiles/a.out.dir/goplt_if.cpp.o: ../goplt_if.h
 
-CMakeFiles/a.out.dir/sample.cpp.o: ../goplt_if.h
-CMakeFiles/a.out.dir/sample.cpp.o: ../sample.cpp
+CMakeFiles/a.out.dir/update_sample.cpp.o: ../goplt_if.h
+CMakeFiles/a.out.dir/update_sample.cpp.o: ../update_sample.cpp
 

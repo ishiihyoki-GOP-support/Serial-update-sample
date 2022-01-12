@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <time.h>
 #include "goplt_if.h"
-
 ///////////  シリアル通信用
 
 #define SERIAL_PORT "/dev/ttyACM0"  // ファイルディスクリプタ
@@ -45,12 +44,28 @@ BOOL Serial_Init(){
     ioctl(fd, TCSETS, &tio);            // ポートの設定を有効にする
 
 }
+void Serial_Close()
+{
+    close(fd);
+}
 
-#define LOG_OUTPUT //コンソールに通信内容出力する場合はコメントアウト
+//#define LOG_OUTPUT //コンソールに通信内容出力する場合はコメントアウト
+static int isbinary=FALSE;
+void debug_binary(int mode){
+    isbinary=mode;
+}
+
 #ifdef LOG_OUTPUT
+
 void debug_put_console(int c)
 {
     if(c!=-1){
+        if(isbinary){
+            // printf("%02x ",(uint8_t)c);
+            // if(c==0x0d){
+            //     printf("\n");
+            // }
+        }else{
         if(c==0x0d){
             printf("\n");
         }else if(c==0x02){
@@ -63,6 +78,8 @@ void debug_put_console(int c)
             printf("[nak]");
         }else{
             printf("%c",c);
+        }
+
         }
     }
 }
@@ -130,11 +147,18 @@ void fnSET()
     LtMemRead("SV_1",&sv_1);
 }
 
+
+void fnUPDATE()
+{
+    DoTransfarDataSer("../update_data/");
+}
+
 //メッセージ対するハンドラー関数の設定
 ltMes_Callback tbl[]={
     {"START",fnSTART},
     {"STOP",fnSTOP},
     {"SET",fnSET},
+    {"UPDATE",fnUPDATE},
     {NULL,NULL} //ハンドラーテーブルの終端を示すため、最後の行に｛NULL,NULL｝を登録
 };
 

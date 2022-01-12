@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/pi/gopct/goplt_if.cpp
+/home/pi/serial-update-sample/goplt_if.cpp
 stdio.h
 -
 stdlib.h
@@ -16,31 +16,35 @@ string.h
 stdarg.h
 -
 iodefine.h
-/home/pi/gopct/iodefine.h
+/home/pi/serial-update-sample/iodefine.h
 r_cg_macrodriver.h
-/home/pi/gopct/r_cg_macrodriver.h
+/home/pi/serial-update-sample/r_cg_macrodriver.h
 r_cg_serial.h
-/home/pi/gopct/r_cg_serial.h
+/home/pi/serial-update-sample/r_cg_serial.h
 r_cg_port.h
-/home/pi/gopct/r_cg_port.h
+/home/pi/serial-update-sample/r_cg_port.h
 r_cg_userdefine.h
-/home/pi/gopct/r_cg_userdefine.h
+/home/pi/serial-update-sample/r_cg_userdefine.h
 sys/stat.h
 -
 windows.h
 -
+dirent.h
+-
+unistd.h
+-
 goplt_if.h
-/home/pi/gopct/goplt_if.h
+/home/pi/serial-update-sample/goplt_if.h
 
-/home/pi/gopct/goplt_if.h
+/home/pi/serial-update-sample/goplt_if.h
 r_cg_userdefine.h
-/home/pi/gopct/r_cg_userdefine.h
+/home/pi/serial-update-sample/r_cg_userdefine.h
 vs/win_rapper.h
-/home/pi/gopct/vs/win_rapper.h
+/home/pi/serial-update-sample/vs/win_rapper.h
 sys/types.h
 -
 
-/home/pi/gopct/sample.cpp
+/home/pi/serial-update-sample/update_sample.cpp
 stdio.h
 -
 sys/types.h
@@ -58,5 +62,5 @@ unistd.h
 time.h
 -
 goplt_if.h
-/home/pi/gopct/goplt_if.h
+/home/pi/serial-update-sample/goplt_if.h
 

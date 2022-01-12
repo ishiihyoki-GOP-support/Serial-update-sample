@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/pi/gopct
+CMAKE_SOURCE_DIR = /home/pi/serial-update-sample
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/pi/gopct/build
+CMAKE_BINARY_DIR = /home/pi/serial-update-sample/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/gopct/build/CMakeFiles /home/pi/gopct/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/serial-update-sample/build/CMakeFiles /home/pi/serial-update-sample/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/gopct/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/pi/serial-update-sample/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -150,32 +150,32 @@ goplt_if.cpp.s:
 	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/goplt_if.cpp.s
 .PHONY : goplt_if.cpp.s
 
-sample.o: sample.cpp.o
+update_sample.o: update_sample.cpp.o
 
-.PHONY : sample.o
+.PHONY : update_sample.o
 
 # target to build an object file
-sample.cpp.o:
-	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/sample.cpp.o
-.PHONY : sample.cpp.o
+update_sample.cpp.o:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/update_sample.cpp.o
+.PHONY : update_sample.cpp.o
 
-sample.i: sample.cpp.i
+update_sample.i: update_sample.cpp.i
 
-.PHONY : sample.i
+.PHONY : update_sample.i
 
 # target to preprocess a source file
-sample.cpp.i:
-	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/sample.cpp.i
-.PHONY : sample.cpp.i
+update_sample.cpp.i:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/update_sample.cpp.i
+.PHONY : update_sample.cpp.i
 
-sample.s: sample.cpp.s
+update_sample.s: update_sample.cpp.s
 
-.PHONY : sample.s
+.PHONY : update_sample.s
 
 # target to generate assembly for a file
-sample.cpp.s:
-	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/sample.cpp.s
-.PHONY : sample.cpp.s
+update_sample.cpp.s:
+	$(MAKE) -f CMakeFiles/a.out.dir/build.make CMakeFiles/a.out.dir/update_sample.cpp.s
+.PHONY : update_sample.cpp.s
 
 # Help Target
 help:
@@ -189,9 +189,9 @@ help:
 	@echo "... goplt_if.o"
 	@echo "... goplt_if.i"
 	@echo "... goplt_if.s"
-	@echo "... sample.o"
-	@echo "... sample.i"
-	@echo "... sample.s"
+	@echo "... update_sample.o"
+	@echo "... update_sample.i"
+	@echo "... update_sample.s"
 .PHONY : help
 
 

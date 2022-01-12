@@ -23,10 +23,13 @@
 #ifdef _WIN32
 #include <windows.h>
 #elif defined(__linux__)
+#include <dirent.h>
+#include <unistd.h>
 #define _stat stat
 #endif
 #endif
 #include "goplt_if.h"
+
 
 /*
 	定数定義
@@ -87,15 +90,15 @@ static uint8_t _calc_sum(char *cmd)
 			char str10],*s1,*s2;
 			s1=byte_tohexstr(0x12);
 			s2=byte_tohexstr(0x34);
-			strcpy(str,s1);
-			strcat(str,s2);
+			_strcpy(str,s1);
+			_strcat(str,s2);
 			上記ではstrは"3434"となる
 			
 			"1234"を得たい場合
 			s1=byte_tohexstr(0x12);
-			strcpy(str,s1);
+			_strcpy(str,s1);
 			s2=byte_tohexstr(0x34);
-			strcat(str,s2);
+			_strcat(str,s2);
 			とする
 */
 static char *byte_tohexstr(uint8_t b)
@@ -166,6 +169,33 @@ static void _strcpy(char *dest, char *src){
 	}
 	*dest = '\0';
 }
+
+static void _strcat(char *dest, char *src){
+	int len = 0;
+	while (*dest) {
+		*dest++;
+		len++;
+		if (len > LT_TEXT_LENGTH-1)break;
+	}
+	while (*src) {
+		*dest++ = *src++;
+		len++;
+		if (len > LT_TEXT_LENGTH-1)break;
+	}
+	*dest = '\0';
+}
+#if defined(__linux__)
+void delay(int dleaytime){
+	usleep((useconds_t)dleaytime*1000);
+}
+#else
+void delay(int dleaytime){
+	int st=get_syscount();
+	while(get_syscount()<st+dleaytime);
+}
+#endif
+
+
 /*
 	用途	通信エラー内容の保持
 	区分	static
@@ -559,7 +589,7 @@ ENQ_RETSTATUS SpiCmd_ENQ_READ(uint8_t FAR *read_buf){
 		status = xfer_spi_R(read_buf, 1);
 		if(status!=MD_OK)goto err;
 		SPI_CS(FALSE);
-		strcpy(read_buf,"");
+		_strcpy(read_buf,"");
 		return ENQ_NODATA;
 	}else{
 		status = xfer_spi_R(read_buf, len+1);
@@ -569,7 +599,7 @@ ENQ_RETSTATUS SpiCmd_ENQ_READ(uint8_t FAR *read_buf){
 		if(read_buf[len]==CheckSum(read_buf,0,len)){
 			return ENQ_OK;
 		}else{
-			strcpy(read_buf,"");
+			_strcpy(read_buf,"");
 			return ENQ_ERROR;
 		}
 	}
@@ -594,15 +624,15 @@ BOOL SpiCmd_MEM_BIOffset_READ_REQ(uint8_t FAR* memname,int16_t offset,int16_t nu
 
 	//データ パケット作成
 	_buf[0]=SPICMD_MEM_BI_READ_REQ;
-	_buf[1]=strlen(memname)+1;
+	_buf[1]=_strlen(memname)+1;
 	_buf[2]=(uint8_t)(offset/256);
 	_buf[3]=(uint8_t)(offset%256);
 	_buf[4]=(uint8_t)(num/256);
 	_buf[5]=(uint8_t)(num%256);
-	strcpy(_buf+4,memname);
-	sum=CheckSum(memname,0,strlen(memname)+1);
+	_strcpy(_buf+4,memname);
+	sum=CheckSum(memname,0,_strlen(memname)+1);
 	SPI_CS(TRUE);
-	status = xfer_spi_W(_buf, 6+strlen(memname)+1);
+	status = xfer_spi_W(_buf, 6+_strlen(memname)+1);
 	SPI_CS(FALSE);
 	return status==MD_OK?TRUE:FALSE;
 }
@@ -659,16 +689,16 @@ BOOL SpiCmd_MEM_BIOffset_WRITE(uint8_t FAR* memname,int16_t offset,int16_t num,u
 
 	//データ パケット作成
 	_buf[0]=SPICMD_MEM_BIOffset_WRITE;
-	_buf[1]=strlen(memname)+1;
+	_buf[1]=_strlen(memname)+1;
 	_buf[2]=offset/256;
 	_buf[3]=offset%256;
 	_buf[4]=num/256;
 	_buf[5]=num%256;
-	strcpy(_buf+6,memname);
-	sum=CheckSum(memname,0,strlen(memname)+1);
+	_strcpy(_buf+6,memname);
+	sum=CheckSum(memname,0,_strlen(memname)+1);
 	sum=CheckSum(write_buf,sum,num);
 	SPI_CS(TRUE);
-	status = xfer_spi_W(_buf, 6+strlen(memname)+1);
+	status = xfer_spi_W(_buf, 6+_strlen(memname)+1);
 	if(status!=MD_OK)goto err;
 	status = xfer_spi_W(write_buf, num);
 	if(status!=MD_OK)goto err;
@@ -699,11 +729,11 @@ BOOL SpiCmd_MEM_READ_REQ(uint8_t FAR * memname,int16_t num){
 	memset(_buf, 0, 3 + MAX_MEMNAME_SIZE + 6);
 	//データ パケット作成
 	_buf[0]=SPICMD_MEM_READ_REQ;
-	_buf[1]=strlen(memname)+1;
+	_buf[1]=_strlen(memname)+1;
 	_buf[2]=(uint8_t)num;
-	strcpy(_buf+3,memname);
+	_strcpy(_buf+3,memname);
 	SPI_CS(TRUE);
-	status = xfer_spi_W(_buf, 5+strlen(memname)+1);
+	status = xfer_spi_W(_buf, 5+_strlen(memname)+1);
 	SPI_CS(FALSE);
 	return status==MD_OK?TRUE:FALSE;
 }
@@ -770,13 +800,13 @@ BOOL SpiCmd_MEM_WRITE(uint8_t FAR *memname,int16_t num,int32_t FAR *write_buf)
 	int16_t i;
 	//データ パケット作成
 	_buf[0]=SPICMD_MEM_WRITE;
-	_buf[1]=strlen(memname)+1;
+	_buf[1]=_strlen(memname)+1;
 	_buf[2]=num;
-	strcpy(_buf+3,memname);
-	sum=CheckSum(memname,0,strlen(memname)+1);
+	_strcpy(_buf+3,memname);
+	sum=CheckSum(memname,0,_strlen(memname)+1);
 	sum=CheckSum(write_buf,sum,num*4);
 	SPI_CS(TRUE);
-	status = xfer_spi_W(_buf, 3+strlen(memname)+1);
+	status = xfer_spi_W(_buf, 3+_strlen(memname)+1);
 	if(status!=MD_OK)goto err;
 	for(i=0;i<num;i++)
 	{
@@ -1271,7 +1301,7 @@ const char FAR *LtEnq(char FAR *rcv)
 			}
 			if(rcv){
 				//戻り値用バッファー指定時、受信文を返す。
-				strcpy(rcv,s);
+				_strcpy(rcv,s);
 				return rcv;
 			}
 			return NULL;
@@ -1490,7 +1520,7 @@ const char FAR *SPI_LtEnq(char FAR *rcv)
 		}
 		if(rcv){
 			//戻り値用バッファー指定時、受信文を返す。
-			strcpy(rcv,s);
+			_strcpy(rcv,s);
 			return rcv;
 		}
 	}
@@ -1510,14 +1540,32 @@ const char FAR *SPI_LtEnq(char FAR *rcv)
 
 #ifdef FILESYSTEM
 struct fileinfo {
-	const char* src_path;	//ホスト側ファイルシステムが参照可能な名称を指定します
-	const char* dest_path;	//GOP-LTに書き込み債の名称を指定します。GOP.iniがあるフォルダをルートとし、フォルダ区切りは'/'で指定します。
+	char* src_path;	//ホスト側ファイルシステムが参照可能な名称を指定します
+	char* dest_path;	//GOP-LTに書き込み債の名称を指定します。GOP.iniがあるフォルダをルートとし、フォルダ区切りは'/'で指定します。
 	int size;				//ファイルサイズを記述。stat等で取得可能であれば実行時取得でも構いません
 };
+/*
+	filetableをクリアします。
+*/
+struct fileinfo* filetable=NULL;
+
+void clean_table()
+{
+	if (filetable) {
+		struct fileinfo* p = filetable;
+		while (p->src_path) 
+		{
+			free(p->src_path);
+			free(p->dest_path);
+			p++;
+		}
+		free(filetable);
+		filetable = NULL;
+	}
+}
 
 #ifdef WIN32
 //windows上での動作サンプルでは、filetableを動的に生成します。
-struct fileinfo* filetable=NULL;
 LPCTSTR ShowFolderDlg();
 
 /*
@@ -1547,20 +1595,20 @@ struct fileinfo* _sub_MakeFileCatalog(LPCTSTR full_path, LPCTSTR folderName,stru
 			else if(fdat.cFileName[0] != '.') {
 				int slen;
 				HANDLE hFile;
-				DWORD size_low, size_high;
+				uint32_t size_low, size_high;
 				sprintf(fpath, "%s%s", full_path, fdat.cFileName);
-				slen = strlen(fpath);
+				slen = _strlen(fpath);
 				p->src_path = malloc(slen+1);
-				strcpy(p->src_path, fpath);
+				_strcpy(p->src_path, fpath);
 				if (!folderName) {
 					sprintf(fname, "%s", fdat.cFileName);
 				}
 				else {
 					sprintf(fname, "%s/%s", folderName, fdat.cFileName);
 				}
-				slen = strlen(fname);
+				slen = _strlen(fname);
 				p->dest_path = malloc(slen + 1);
-				strcpy(p->dest_path, fname);
+				_strcpy(p->dest_path, fname);
 				hFile=CreateFile(fpath,GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 				size_low = GetFileSize(hFile, &size_high);
 				CloseHandle(hFile);
@@ -1602,23 +1650,6 @@ int _sub_MakeFileCatalog_NUM(LPCTSTR datapath) {
 	return num;
 }
 /*
-	filetableをクリアします。
-*/
-void clen_table()
-{
-	if (filetable) {
-		struct fileinfo* p = filetable;
-		while (p->src_path) 
-		{
-			free(p->src_path);
-			free(p->dest_path);
-			p++;
-		}
-		free(filetable);
-		filetable = NULL;
-	}
-}
-/*
 	filetableを作成します
 */
 void MakeFileCatalog()
@@ -1628,7 +1659,7 @@ void MakeFileCatalog()
 	if (datapath) {
 		struct fileinfo* p;
 		int filenum;
-		clen_table();
+		clean_table();
 		filenum = _sub_MakeFileCatalog_NUM(datapath);
 		filetable = (struct fileinfo*)malloc((filenum + 1) * sizeof(struct fileinfo));
 		p = _sub_MakeFileCatalog(datapath, NULL, filetable);
@@ -1638,19 +1669,94 @@ void MakeFileCatalog()
 }
 
 #else	//WIN32
-//filetableの動的生成を行わない場合、以下のように初期値として指定してください。
-//ファイル名及びファイルサイズは実際の環境に合わせて変更してください。
-struct fileinfo filetable[] = {
-	//TPデザイナーで作成した画面データより、書き込みファイルのカタログを用意します。
-	{"G:\\LTX_DATA\\SAMPLE\\GOP.ini","GOP.ini",127},
-	{"G:\\LTX_DATA\\SAMPLE\\meminfo.txt","meminfo.txt",572},
-	{"G:\\LTX_DATA\\SAMPLE\\pagedata.dat","pagedata.dat",26396},
-	{"G:\\LTX_DATA\\SAMPLE\\GB00\\GB0000.gb","GB00/GB0000.gb",36136},
-	{"G:\\LTX_DATA\\SAMPLE\\GB00\\GB0001.gb","GB00/GB0001.gb",36136},
-	{"G:\\LTX_DATA\\SAMPLE\\SI00\\SI0001.lsd","SI00/SI0001.lsd",254},
-	{"G:\\LTX_DATA\\SAMPLE\\SI00\\SI0002.lsd","SI00/SI0002.lsd",617},
-	{NULL,NULL,0},	//(データの終了)
-};
+
+
+/*
+	フォルダ中のファイルを検索しfiletable構造体に値をセットします
+*/
+struct fileinfo* _sub_MakeFileCatalog(char* src_path, char* dest_path,struct fileinfo *p) {
+	DIR *dir;
+	struct dirent *entry;
+	if((dir=opendir(src_path))){
+		while((entry=readdir(dir))){
+			if (entry->d_name[0] != '.') {
+				char spath[1025];
+				char dpath[256];
+				struct stat info;
+				if(dest_path){
+					_strcpy(dpath,dest_path);
+					_strcat(dpath,"/");
+					_strcat(dpath,entry->d_name);
+				}else{
+					_strcpy(dpath,entry->d_name);
+				}
+				_strcpy(spath, src_path);
+				_strcat(spath, entry->d_name);
+				if (!stat(spath, &info) ){
+					if (S_ISDIR(info.st_mode)){
+						_strcat(spath, "/");
+						p=_sub_MakeFileCatalog(spath, dpath,p);
+					}else{
+						int slen;
+						slen = _strlen(spath);
+						p->src_path = (char *)malloc(slen+1);
+						_strcpy(p->src_path,spath);
+						slen = _strlen(dpath);
+						p->dest_path = (char *)malloc(slen+1);
+						_strcpy(p->dest_path,dpath);
+						printf("_sub_MakeFileCatalog %s %s\n",p->src_path,p->dest_path);
+						p++;
+					}
+				}
+			}	
+		}					
+	}
+	return p;
+}
+/*
+	フォルダ中のファイル数をを検索します
+*/
+
+int _sub_MakeFileCatalog_NUM(char* src_path) {
+	DIR *dir;
+	int num = 0;
+	struct dirent *entry;
+	if((dir=opendir(src_path))){
+		while((entry=readdir(dir))){
+			if (entry->d_name[0] != '.') {
+				char spath[1025];
+				struct stat info;
+				_strcpy(spath, src_path);
+				_strcat(spath, entry->d_name);
+				printf("%s\n",spath);
+				if (!stat(spath, &info) ){
+					if (S_ISDIR(info.st_mode)){
+						_strcat(spath, "/");
+						num+=_sub_MakeFileCatalog_NUM(spath);
+					}else{
+						num++;
+					}
+				}
+			}						
+		}
+	}
+	return num;
+}
+
+
+void MakeFileCatalog(char *datapath)
+{
+	if (datapath) {
+		struct fileinfo* p;
+		int filenum;
+		clean_table();
+		filenum = _sub_MakeFileCatalog_NUM(datapath);
+		filetable = (struct fileinfo*)malloc((filenum + 1) * sizeof(struct fileinfo));
+		p = _sub_MakeFileCatalog(datapath, NULL, filetable);
+		p->src_path = NULL;
+		p->dest_path = NULL;
+	}
+}
 #endif //WIN32
 
 
@@ -1688,10 +1794,6 @@ struct fileinfo {
 
 
 
-void delay(int dleaytime){
-	int st=get_syscount();
-	while(get_syscount()<st+dleaytime);
-}
 
 #ifdef IS_USE_SPI
 
@@ -1742,17 +1844,17 @@ BOOL SpiCmd_FILE_HEAD(char *fname,unsigned int filesize)
 	uint8_t	sendbuf[256];
 	memset(sendbuf,0,256);
 	sendbuf[0]=SPICMD_FILE_HEAD;
-	sendbuf[1]=strlen(fname)+1;
+	sendbuf[1]=_strlen(fname)+1;
 	sendbuf[2]=(flen>>24)&0x000000ff;
 	sendbuf[3]=(flen>>16)&0x000000ff;
 	sendbuf[4]=(flen>> 8)&0x000000ff;
 	sendbuf[5]=(flen    )&0x000000ff;
 	//ファイル名書き込み
-	strcpy((char *)sendbuf+6,fname);
+	_strcpy((char *)sendbuf+6,fname);
 	//SUM書込み
-	sendbuf[6+strlen(fname)+1]=CheckSum(sendbuf+6,0,strlen(fname)+1);
+	sendbuf[6+_strlen(fname)+1]=CheckSum(sendbuf+6,0,_strlen(fname)+1);
 	//転送長
-	len=strlen(fname)+8;	//パケット長=コマンド(1)+ファイル名長指定(1)+ファイルサイズ指定(4)+ファイル名(GetLength)+NULL(1)+SUM(1)
+	len=_strlen(fname)+8;	//パケット長=コマンド(1)+ファイル名長指定(1)+ファイルサイズ指定(4)+ファイル名(GetLength)+NULL(1)+SUM(1)
 
     SPI_CS(TRUE);
     status = xfer_spi_W(sendbuf, len+1);//ゴミ取りのためダミー1バイト追加
@@ -2425,7 +2527,7 @@ int RamUpload(char *srcname, int blockno, int packsize)
 			if (!rbuf)goto err;
 			memset(rbuf,0, packsize);
 
-			int rs = fread(rbuf, packsize,1,rf);
+			int rs = fread(rbuf,1, packsize,rf);
 			if (rs == 0)break;
 			if (rs != 0) {
 				int i;
@@ -2460,6 +2562,182 @@ err:
 	}
 	return FALSE;
 }
+
+#define DATASIZE 256
+#define PACKSIZE (DATASIZE+8)
+#define FASTUPLOAD_TIMEOUT 60000
+
+void debug_binary(int mode);
+
+int FileUpload(char *src,char *dest)
+{
+	FILE *rf;
+	struct _stat sbuf;
+	int rlen;
+	int size,addr=0;
+	char cmd_buf[64], * cmd;
+	_stat(src, &sbuf);
+	size = sbuf.st_size;
+	rf=fopen(src,"r");
+	printf("FileUpload %s %s\n",src,dest);
+	if(rf){
+		uint32_t now;
+		unsigned sum;
+		int posid = 0;
+		//1行目
+		sprintf(cmd_buf,"FILEUPLOAD %s %d", dest, size);
+		send_cmd(cmd_buf);
+		now=get_syscount();
+		while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), TIMEOUT)));
+		if (cmd[0] != 0x06) {
+			goto err;
+		}
+		//2行以降
+		while(1){
+			uint8_t rbuf[DATASIZE];
+			memset(rbuf,0,DATASIZE);
+			int rs = fread(rbuf, 1,DATASIZE,rf);
+			if(rs==0)break;
+		 	debug_binary(TRUE);
+			if (rs != 0) {
+				int i;
+				uart_putc(0x02);
+				uart_putc((uint8_t)((addr >> 0) & 0x000000ff));
+				uart_putc((uint8_t)((addr >> 8) & 0x000000ff));
+				uart_putc((uint8_t)((addr >> 16) & 0x000000ff));
+				uart_putc((uint8_t)((addr >> 24) & 0x000000ff));
+				sum = (uint8_t)((addr >> 0) & 0x000000ff) ^ (uint8_t)((addr >> 8) & 0x000000ff) ^ (uint8_t)((addr >> 16) & 0x000000ff) ^ (uint8_t)((addr >> 24) & 0x000000ff);
+				for (i = 0; i < DATASIZE; i++) {
+					uart_putc( rbuf[i]);
+					sum ^= rbuf[i];
+				}
+				uart_putc(0x03);
+				uart_putc(sum);
+				uart_putc(0x0d);
+				addr += DATASIZE;
+			}
+		 	debug_binary(FALSE);
+			now = get_syscount();
+			while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), TIMEOUT)));
+			if (cmd[0] != 0x06) {
+				goto err;
+			}
+			if (rs < DATASIZE)break;
+
+		}
+		fclose(rf);
+	}
+	return TRUE;
+err:
+	fclose(rf);
+	return FALSE;
+
+}
+BOOL CopyAllSer() 
+{
+	int i = 0;
+	while (TRUE) {
+		if (filetable[i].src_path == NULL) {
+			break;
+		}
+		else {
+			if (!FileUpload(filetable[i].src_path, filetable[i].dest_path)) {
+				return FALSE;
+			}
+		}
+		i++;
+	}
+	return TRUE;
+}
+
+
+BOOL Serial_Init();
+void Serial_Close();
+#define ERASE_TIMEOUT 1000000
+#define REBOOT_TIMEOUT 10000
+
+BOOL DoTransfarDataSer(char *pathname){
+	uint32_t now;
+	BOOL ret;
+	char cmd_buf[64], * cmd;
+	//更新データがあるフォルダを確認し、書き込みデータのリストを作成します。
+	MakeFileCatalog(pathname);
+	if(filetable==NULL){
+		//更新データリストが生成されなければエラー
+		return FALSE;
+	}
+	now	= get_syscount();
+	printf("GOP-CTをデータ書き換えモードで再起動します\n");
+
+	send_cmd("REWRITEMODE_SETFLAG");
+	now = get_syscount();
+	while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), TIMEOUT)));
+	if (cmd[0] != 0x06) {
+		return FALSE;
+	}
+
+	printf("再起動中・・・");
+	send_cmd("RESET");
+	Serial_Close();//GOPが再起動するため一度ポートを閉じます
+	delay(3000);	//再起動待ち
+	now = get_syscount();
+	//再起動後シリアルポート再接続
+	while (!Serial_Init())
+	{
+		if (get_syscount() > now + REBOOT_TIMEOUT)
+		{
+			printf("再起動後、ポート再オープンタイムアウト\n");
+			return FALSE;
+		}
+	}
+	printf("データ書き換えモードに移行\n");
+	send_cmd("DATASTART");
+	now = get_syscount();
+	while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), TIMEOUT)));
+	if (cmd[0] != 0x06) {
+		//ack以外でエラー
+		return FALSE;
+	}
+	printf("データ消去中・・・\n");
+	send_cmd("DATAERASE");
+	now = get_syscount();
+	//データ消去は時間がかかるためタイムアウトは長めにします
+	while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), ERASE_TIMEOUT)));
+	if (cmd[0] != 0x06) {
+		return FALSE;
+	}
+	printf("データ書き込み中・・・\n");
+	//更新データリストのファイルをすべて転送します。
+	ret=CopyAllSer();
+	if (!ret) {
+		return FALSE;
+	}
+	//書き換え処理のクロージングを行います。
+	send_cmd("DATAEND");
+	now = get_syscount();
+	while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), ERASE_TIMEOUT)));
+	if (cmd[0] != 0x06) {
+		return FALSE;
+	}
+	printf("データ書き込み完了。再起動します。しばらくお待ちください\n");
+	send_cmd("RESET");
+	Serial_Close();
+	delay(3000);
+	now = get_syscount();
+	while (!Serial_Init())
+	{
+		if (get_syscount() > now + REBOOT_TIMEOUT)
+		{
+			printf("再起動後、ポート再オープンタイムアウト\n");
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+
+
+
 #endif
 /*
 	機能	GOPに任意のメッセージを送信し、返信を返す。

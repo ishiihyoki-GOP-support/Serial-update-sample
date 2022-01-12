@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/a.out.dir/sample.cpp.o"
+  "CMakeFiles/a.out.dir/update_sample.cpp.o"
   "CMakeFiles/a.out.dir/goplt_if.cpp.o"
   "a.out.pdb"
   "a.out"

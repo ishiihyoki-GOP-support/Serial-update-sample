@@ -1,19 +1,17 @@
-# GOP-CT70A Linux用ホストサンプル
-raspberry piとGOP-CT70AをUSB接続で通信するサンプルです。  
-USBで接続するとGOP-CT70AはttyACM0として認識されます。  
-ttyACM0をシリアルポートとして開きコマンド通信を行います。
+# GOP-CT70A UARTまたはUSBCDC通信にて画面データ書き換えサンプル
+raspberry piとGOP-CT70AをUSB接続で通信状態から画面データの書き換えを行うサンプルです。
+https://github.com/y-shmada/GOP-CT70A-LinuxHost-Sample  
+のサンプルをもとに画面更新機能を付加します。  
+
 ## ファイル構成
-- sample.cpp  
+- update_sample.cpp  
 ホストアプリケーションのメインモジュールです。
 ここでシリアルポートを初期し、メインループを回します。
 - goplt_if.cpp  
 GOP-CT70Aのコマンド処理をライブラリ化したモジュールです。(GOP通信ライブラリ)
-原則修正は必要ありません。
-動作のため以下の3つの関数をシステム側で定義する必要があります。
+シリアルでの画面データ更新のため以下APIを追加しています。
  ```C
-uint32_t get_syscount();	//システム時刻をms単位で取得
-int uart_getc();			//ポートから1バイト取得　データない場合は-1を返す
-void uart_putc(char c);		//ポートから1バイト出力
+ BOOL DoTransfarDataSer(char *pathname);
  ```
 これらの関数はsample.cで記述しています。
 - goplt_if.h  
@@ -26,194 +24,368 @@ CMake プロジェクトファイルです。
 CMakeビルド作業用フォルダーです
 - contents/sample1.etlx  
 画面データファイルです。
+- contents/update_data.etlx  
+更新用の画面データの元ファイルです。このファイルをTP-DesignerLTで開き、書込み用USBメモリーを作成します。  
+作成した書き込みデータを次のupdate_dataのフォルダーにコピーしておきます。
+- update_data  
+更新用画面データファイルです。このフォルダ内の全データをGOPに転送します。  
+本サンプルではサンプルを簡潔にするため、USBメモリーから取り出していますが  
+直接USBメモリーのフォルダーから転送しても構いません。  
 
 
 
 ## サンプルアプリケーションの動作
-サンプルでは以下のような画面でホストのコードを作成します。  
-![画面イメージ](image/sample1_gazo.jpg)  
-動作としてはGOP側の動作で設定値に値をセットし、STARTを押されたらホスト側は設定値に近づくよう現在値を増減させます。    
+sample1.etlxを開き画面を書き込んでください。
+すると以下のような画面となります。  
+![画面イメージ1](image/sample1_gazo.jpg)  
 
-## 画面データ
-画面データは<a href="./contents/sample1.etlx" download="sample1.etlx">/contents/sample1.etlx</a>から取得できます。  
-画面データは以下のメモリーを用意します。  
-  用途   |  メモリー名  
-  ---     |   ---
-  設定値  |  SV_1  
-  現在値  |  PV_1  
+UPDATEボタンを押すと画面更新が始まり成功すると以下のような画面になります。  
+![画面イメージ2](image/update_gazo.jpg)  
+UPDATEボタンで通信出力を行いこの通信を受けて更新処理を行うようにホストを作ります。
 
-また動作は以下のように設定します
-  操作  | アクション
-  ---     |   ---
-  SETボタンまたは設定値カウンター |  キーパッドを開き値設定</br> 確定後メッセージ"SET"を出力
-  STARTボタン |  メッセージ"START"を出力
-  STOPボタン  |メッセージ"STOP"を出力
+その他の挙動は元のサンプルのままです。  
 
 ## ホストソース
-sample.cに一通りの処理を記述しています。  
+
+
 ### Linux側の準備
-- シリアル通信の初期化  
-GOP通信ライブラリは1バイト単位の送受信が可能な動作が必要です。  
-そのため非カノニカルで動作するようにシリアルポートを初期化します。
+- シリアル通信
+画面データ書き換えのためにはGOPをリセットする必要があります。  
+GOPリセットするとUSBCDC接続の場合挙動が不安定にあるのでポートクローズする関数を用意します。
+
 ```C
-#define SERIAL_PORT "/dev/ttyACM0"  // ファイルディスクリプタ
 
-static int fd=0;
-void Serial_Init(){
-    struct termios tio;                 // シリアル通信設定
-    int baudRate = B115200;
-    int i;
-    int len;
-    int ret;
-    int size;
-//シリアルポートの初期化
-    fd = open(SERIAL_PORT, O_RDWR);     // デバイスをオープンする
-    if (fd < 0) {
-        printf("open error\n");
-        return -1;
-    }
-    //非カノニカルモードで動作させるための設定
-    tio.c_cflag += CREAD;               // 受信有効
-    tio.c_cflag += CLOCAL;              // ローカルライン（モデム制御なし）
-    tio.c_cflag += CS8;                 // データビット:8bit
-    tio.c_cflag += 0;                   // ストップビット:1bit
-    tio.c_cflag += 0;                   // パリティ:None
-    cfsetispeed( &tio, baudRate );
-    cfsetospeed( &tio, baudRate );
-    tio.c_iflag=IGNPAR | ICRNL; 
-
-    cfmakeraw(&tio);                    // RAWモード
-    //受信タイムアウトを待たないよう設定
-    tio.c_cc[VTIME]=0;                  
-    tio.c_cc[VMIN]=0;
-    tcsetattr( fd, TCSANOW, &tio );     // デバイスに設定を行う
-
-    ioctl(fd, TCSETS, &tio);            // ポートの設定を有効にする
-
-}
-```
-- GOP通信ライブラリの必要関数 1バイト送受信
-```C
-/ポートから1バイト取得 データない場合は-1を返す
-int uart_getc(){
-    char buf[1];
-    int c;
-    if(read(fd,buf,1)){
-        c=buf[0];
-    }else{
-        c=-1;
-    }
-    debug_put_console(c);
-    return c;
-}
-
-//ポートから1バイト出力
-void uart_putc(char c){
-    char buf[1];
-    buf[0]=c;
-    write(fd,buf,1);
-    debug_put_console(c);
-}
-```
-- GOP通信ライブラリの必要関数 システム時刻を1ms単位で取得
-```C
-//システム時刻をms単位で取得
-uint32_t get_syscount(){
-    uint32_t _systime=0;
-    static struct timespec _sttime={0,0};
-    if(_sttime.tv_sec==0&&_sttime.tv_nsec==0){
-        clock_gettime(CLOCK_REALTIME, &_sttime);
-    }else{
-        struct timespec _nowtime;
-        clock_gettime(CLOCK_REALTIME, &_nowtime);
-        _systime=(_nowtime.tv_sec-_sttime.tv_sec)*1000+(_nowtime.tv_nsec-_sttime.tv_nsec)/1000000;
-
-    }
-
-    return _systime;
+void Serial_Close()
+{
+    close(fd);
 }
 ```
 ### アプリケーションの動作
 - メッセージに対するハンドラー  
-ltMes_Callback型の配列に受け取ったメッセージ(TPデザイナーLTで設定した内容。STX等のパケット識別用の文字はGOP通信ライブラリで取り払われます)と  
-そのメッセージに対応した関数[void (*func)(void)型]を登録します。
+`DoTransfarDataSer`を呼ぶことで画面データの書き換えが行われます。  
+引数は書き換えたいデータがあるフォルダーを指定してください。  
 ```C
+//メッセージ"UPDATE"受信時 画面書き換えを行う
+void fnUPDATE()
+{
+    DoTransfarDataSer("../update_data/");
+}
 
-int32_t sv_1,pv_1;
-BOOL run_flag=FALSE;    //運転状態のフラグ
-
-//メッセージ"START"受信時 運転フラグをセット
-void fnSTART()
-{
-    run_flag=TRUE;
-}
-//メッセージ"STOP"受信時 運転フラグをリセット
-void fnSTOP()
-{
-    run_flag=FALSE;
-}
-//メッセージ"SET"受信時 GOPのメモリーSV_1の値をホスト側の変数sv_1に読み込み
-void fnSET()
-{
-    LtMemRead("SV_1",&sv_1);
-}
 
 //メッセージ対するハンドラー関数の設定
 ltMes_Callback tbl[]={
     {"START",fnSTART},
     {"STOP",fnSTOP},
     {"SET",fnSET},
+    {"UPDATE",fnUPDATE},    //更新トリガーの追加
     {NULL,NULL} //ハンドラーテーブルの終端を示すため、最後の行に｛NULL,NULL｝を登録
 };
 ```
-- メインループ  
-シリアル初期化しハンドラーテーブルの登録後  
-メッセージループを回します。  
-この中でLtEnqを呼び出すことでメッセージに応じた処理を呼び出すことができます。  
-また、このループ内でホスト側の状態に応じた処理を行います。  
-本アプリケーションの場合、pv_1の値を増減しGOP側のPV_1に書き込みます。
+- `DoTransfarDataSer`の動作  
+この関数は`golt_if.cpp`に記述しています。  
+修正・変更の必要はありませんが動作について解説します。  
 
-```c
-//運転フラグセット時の動作
-//pv_1をsv_1に近づけるよう値を増減
-//増減した結果をGOPのメモリーPV_1に書き込み
-void run()
-{
-    int d=sv_1-pv_1;
-    if(d<=10){
-        pv_1-=3;
-    }else{
-        if(d>100){
-            d=10;
-        }else {
-            d/=10;
-        }
-        pv_1+=d;
-    }
-    LtMemWrite("PV_1",pv_1);
+全体の流れ  
+```C
+BOOL Serial_Init();
+void Serial_Close();
+#define ERASE_TIMEOUT 1000000
+#define REBOOT_TIMEOUT 10000
+
+BOOL DoTransfarDataSer(char *pathname){
+	uint32_t now;
+	BOOL ret;
+	char cmd_buf[64], * cmd;
+	//更新データがあるフォルダを確認し、書き込みデータのリストを作成します。
+	MakeFileCatalog(pathname);
+	if(filetable==NULL){
+		//更新データリストが生成されなければエラー
+		return FALSE;
+	}
+	now	= get_syscount();
+	printf("GOP-CTをデータ書き換えモードで再起動します\n");
+
+	send_cmd("REWRITEMODE_SETFLAG");
+	now = get_syscount();
+	while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), TIMEOUT)));
+	if (cmd[0] != 0x06) {
+		return FALSE;
+	}
+
+	printf("再起動中・・・");
+	send_cmd("RESET");
+	Serial_Close();//GOPが再起動するため一度ポートを閉じます
+	delay(3000);	//再起動待ち
+	now = get_syscount();
+	//再起動後シリアルポート再接続
+	while (!Serial_Init())
+	{
+		if (get_syscount() > now + REBOOT_TIMEOUT)
+		{
+			printf("再起動後、ポート再オープンタイムアウト\n");
+			return FALSE;
+		}
+	}
+	printf("データ書き換えモードに移行\n");
+	send_cmd("DATASTART");
+	now = get_syscount();
+	while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), TIMEOUT)));
+	if (cmd[0] != 0x06) {
+		//ack以外でエラー
+		return FALSE;
+	}
+	printf("データ消去中・・・\n");
+	send_cmd("DATAERASE");
+	now = get_syscount();
+	//データ消去は時間がかかるためタイムアウトは長めにします
+	while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), ERASE_TIMEOUT)));
+	if (cmd[0] != 0x06) {
+		return FALSE;
+	}
+	printf("データ書き込み中・・・\n");
+	//更新データリストのファイルをすべて転送します。
+	ret=CopyAllSer();
+	if (!ret) {
+		return FALSE;
+	}
+	//書き換え処理のクロージングを行います。
+	send_cmd("DATAEND");
+	now = get_syscount();
+	while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), ERASE_TIMEOUT)));
+	if (cmd[0] != 0x06) {
+		return FALSE;
+	}
+	printf("データ書き込み完了。再起動します。しばらくお待ちください\n");
+	send_cmd("RESET");
+	Serial_Close();
+	delay(3000);
+	now = get_syscount();
+	while (!Serial_Init())
+	{
+		if (get_syscount() > now + REBOOT_TIMEOUT)
+		{
+			printf("再起動後、ポート再オープンタイムアウト\n");
+			return FALSE;
+		}
+	}
+	return TRUE;
 }
 
-int main(int argc, char *argv[])
+```
+
+更新データリストの生成  
+指定のフォルダ以下のファイルをリスト化します。
+
+```C
+struct fileinfo {
+	char* src_path;	//ホスト側ファイルシステムが参照可能な名称を指定します
+	char* dest_path;	//GOP-LTに書き込み債の名称を指定します。GOP.iniがあるフォルダをルートとし、フォルダ区切りは'/'で指定します。
+	int size;				//ファイルサイズを記述。stat等で取得可能であれば実行時取得でも構いません
+};
+/*
+	filetableをクリアします。
+*/
+struct fileinfo* filetable=NULL;
+
+void clean_table()
 {
-    //シリアル通信の初期化
-    Serial_Init();
+	if (filetable) {
+		struct fileinfo* p = filetable;
+		while (p->src_path) 
+		{
+			free(p->src_path);
+			free(p->dest_path);
+			p++;
+		}
+		free(filetable);
+		filetable = NULL;
+	}
+}
 
-    //メッセージハンドラーを登録
-    LtSetMessageCallback(tbl);
 
-    // メインループ
-    while(1) {
-        if(run_flag){
-            run();
-        }
+/*
+	フォルダ中のファイルを検索しfiletable構造体に値をセットします
+*/
+struct fileinfo* _sub_MakeFileCatalog(char* src_path, char* dest_path,struct fileinfo *p) {
+	DIR *dir;
+	struct dirent *entry;
+	if((dir=opendir(src_path))){
+		while((entry=readdir(dir))){
+			if (entry->d_name[0] != '.') {
+				char spath[1025];
+				char dpath[256];
+				struct stat info;
+				if(dest_path){
+					_strcpy(dpath,dest_path);
+					_strcat(dpath,"/");
+					_strcat(dpath,entry->d_name);
+				}else{
+					_strcpy(dpath,entry->d_name);
+				}
+				_strcpy(spath, src_path);
+				_strcat(spath, entry->d_name);
+				if (!stat(spath, &info) ){
+					if (S_ISDIR(info.st_mode)){
+						_strcat(spath, "/");
+						p=_sub_MakeFileCatalog(spath, dpath,p);
+					}else{
+						int slen;
+						slen = _strlen(spath);
+						p->src_path = (char *)malloc(slen+1);
+						_strcpy(p->src_path,spath);
+						slen = _strlen(dpath);
+						p->dest_path = (char *)malloc(slen+1);
+						_strcpy(p->dest_path,dpath);
+						printf("_sub_MakeFileCatalog %s %s\n",p->src_path,p->dest_path);
+						p++;
+					}
+				}
+			}	
+		}					
+	}
+	return p;
+}
+/*
+	フォルダ中のファイル数をを検索します
+*/
 
-        LtEnq(NULL);    //メッセージの受信処理　この関数をメインループで呼ぶとメッセージに応じたハンドラ関数を呼び出します。
-    }
+int _sub_MakeFileCatalog_NUM(char* src_path) {
+	DIR *dir;
+	int num = 0;
+	struct dirent *entry;
+	if((dir=opendir(src_path))){
+		while((entry=readdir(dir))){
+			if (entry->d_name[0] != '.') {
+				char spath[1025];
+				struct stat info;
+				_strcpy(spath, src_path);
+				_strcat(spath, entry->d_name);
+				printf("%s\n",spath);
+				if (!stat(spath, &info) ){
+					if (S_ISDIR(info.st_mode)){
+						_strcat(spath, "/");
+						num+=_sub_MakeFileCatalog_NUM(spath);
+					}else{
+						num++;
+					}
+				}
+			}						
+		}
+	}
+	return num;
+}
 
-    close(fd);                              // デバイスのクローズ
-    return 0;
+
+void MakeFileCatalog(char *datapath)
+{
+	if (datapath) {
+		struct fileinfo* p;
+		int filenum;
+		clean_table();
+		filenum = _sub_MakeFileCatalog_NUM(datapath);
+		filetable = (struct fileinfo*)malloc((filenum + 1) * sizeof(struct fileinfo));
+		p = _sub_MakeFileCatalog(datapath, NULL, filetable);
+		p->src_path = NULL;
+		p->dest_path = NULL;
+	}
+}
+
+```
+全ファイルの送信
+
+```C
+BOOL CopyAllSer() 
+{
+	int i = 0;
+	while (TRUE) {
+		if (filetable[i].src_path == NULL) {
+			break;
+		}
+		else {
+			if (!FileUpload(filetable[i].src_path, filetable[i].dest_path)) {
+				return FALSE;
+			}
+		}
+		i++;
+	}
+	return TRUE;
 }
 ```
+
+ファイル送信  
+```C
+#define DATASIZE 256
+#define PACKSIZE (DATASIZE+8)
+#define FASTUPLOAD_TIMEOUT 60000
+
+void debug_binary(int mode);
+
+int FileUpload(char *src,char *dest)
+{
+	FILE *rf;
+	struct _stat sbuf;
+	int rlen;
+	int size,addr=0;
+	char cmd_buf[64], * cmd;
+	_stat(src, &sbuf);
+	size = sbuf.st_size;
+	rf=fopen(src,"r");
+	printf("FileUpload %s %s\n",src,dest);
+	if(rf){
+		uint32_t now;
+		unsigned sum;
+		int posid = 0;
+		//1行目
+		sprintf(cmd_buf,"FILEUPLOAD %s %d", dest, size);
+		send_cmd(cmd_buf);
+		now=get_syscount();
+		while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), TIMEOUT)));
+		if (cmd[0] != 0x06) {
+			goto err;
+		}
+		//2行以降
+		while(1){
+			uint8_t rbuf[DATASIZE];
+			memset(rbuf,0,DATASIZE);
+			int rs = fread(rbuf, 1,DATASIZE,rf);
+			if(rs==0)break;
+		 	debug_binary(TRUE);
+			if (rs != 0) {
+				int i;
+				uart_putc(0x02);
+				uart_putc((uint8_t)((addr >> 0) & 0x000000ff));
+				uart_putc((uint8_t)((addr >> 8) & 0x000000ff));
+				uart_putc((uint8_t)((addr >> 16) & 0x000000ff));
+				uart_putc((uint8_t)((addr >> 24) & 0x000000ff));
+				sum = (uint8_t)((addr >> 0) & 0x000000ff) ^ (uint8_t)((addr >> 8) & 0x000000ff) ^ (uint8_t)((addr >> 16) & 0x000000ff) ^ (uint8_t)((addr >> 24) & 0x000000ff);
+				for (i = 0; i < DATASIZE; i++) {
+					uart_putc( rbuf[i]);
+					sum ^= rbuf[i];
+				}
+				uart_putc(0x03);
+				uart_putc(sum);
+				uart_putc(0x0d);
+				addr += DATASIZE;
+			}
+		 	debug_binary(FALSE);
+			now = get_syscount();
+			while (!(cmd = gets_lt(cmd_buf, sizeof(cmd_buf), TIMEOUT)));
+			if (cmd[0] != 0x06) {
+				goto err;
+			}
+			if (rs < DATASIZE)break;
+
+		}
+		fclose(rf);
+	}
+	return TRUE;
+err:
+	fclose(rf);
+	return FALSE;
+
+}
+```
+
 ## ビルド方法
 buildフォルダーに移動後  
 cmake  
@@ -221,18 +393,10 @@ make
 で実行ファイルa.outが作成されます。
 ```sh
 pi@raspberrypi:~/gopct $ cd build
-pi@raspberrypi:~/gopct/build $ cmake
-Usage
-
-  cmake [options] <path-to-source>
-  cmake [options] <path-to-existing-build>
-
-Specify a source directory to (re-)generate a build system for it in the
-current working directory.  Specify an existing build directory to
-re-generate its build system.
-
-Run 'cmake --help' for more information.
-
+pi@raspberrypi:~/serial-update-sample/build $ cmake ..
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/pi/serial-update-sample/build
 pi@raspberrypi:~/gopct/build $ make
 [100%] Built target a.out
 pi@raspberrypi:~/gopct/build $ ./a.out

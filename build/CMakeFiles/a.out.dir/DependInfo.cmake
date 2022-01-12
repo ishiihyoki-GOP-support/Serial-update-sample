@@ -4,8 +4,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/pi/gopct/goplt_if.cpp" "/home/pi/gopct/build/CMakeFiles/a.out.dir/goplt_if.cpp.o"
-  "/home/pi/gopct/sample.cpp" "/home/pi/gopct/build/CMakeFiles/a.out.dir/sample.cpp.o"
+  "/home/pi/serial-update-sample/goplt_if.cpp" "/home/pi/serial-update-sample/build/CMakeFiles/a.out.dir/goplt_if.cpp.o"
+  "/home/pi/serial-update-sample/update_sample.cpp" "/home/pi/serial-update-sample/build/CMakeFiles/a.out.dir/update_sample.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
