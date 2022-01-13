@@ -392,10 +392,6 @@ cmake
 make  
 で実行ファイルa.outが作成されます。
 ```sh
-<<<<<<< HEAD
-=======
-pi@raspberrypi:~/serial-update-sample/build $ cd ..
->>>>>>> 872b43d95b122ea05add564b12f99ead52fa483e
 pi@raspberrypi:~/serial-update-sample $ cd build
 pi@raspberrypi:~/serial-update-sample/build $ cmake ..
 -- Configuring done
