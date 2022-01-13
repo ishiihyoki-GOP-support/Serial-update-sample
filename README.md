@@ -392,12 +392,13 @@ cmake
 make  
 で実行ファイルa.outが作成されます。
 ```sh
-pi@raspberrypi:~/gopct $ cd build
+pi@raspberrypi:~/serial-update-sample/build $ cd ..
+pi@raspberrypi:~/serial-update-sample $ cd build
 pi@raspberrypi:~/serial-update-sample/build $ cmake ..
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /home/pi/serial-update-sample/build
-pi@raspberrypi:~/gopct/build $ make
+pi@raspberrypi:~/serial-update-sample/build $ make
 [100%] Built target a.out
-pi@raspberrypi:~/gopct/build $ ./a.out
+pi@raspberrypi:~/serial-update-sample/build $ 
 ```
